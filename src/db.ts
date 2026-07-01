@@ -1,9 +1,22 @@
 import { Database } from "bun:sqlite";
-import { mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, renameSync, rmSync } from "node:fs";
 
 const dataDir = process.env.DATA_DIR || "./data";
 mkdirSync(dataDir, { recursive: true });
 export const attachmentDir = `${dataDir}/attachments`;
+const pendingDb = `${dataDir}/app.db.pending`;
+const pendingAtt = `${dataDir}/attachments.pending`;
+if (existsSync(pendingDb)) {
+  rmSync(`${dataDir}/app.db-wal`, { force: true });
+  rmSync(`${dataDir}/app.db-shm`, { force: true });
+  renameSync(pendingDb, `${dataDir}/app.db`);
+}
+if (existsSync(pendingAtt)) {
+  if (existsSync(`${dataDir}/attachments.old`)) rmSync(`${dataDir}/attachments.old`, { recursive: true, force: true });
+  if (existsSync(attachmentDir)) renameSync(attachmentDir, `${dataDir}/attachments.old`);
+  renameSync(pendingAtt, attachmentDir);
+  rmSync(`${dataDir}/attachments.old`, { recursive: true, force: true });
+}
 mkdirSync(attachmentDir, { recursive: true });
 
 export const db = new Database(`${dataDir}/app.db`, { create: true });
@@ -356,6 +369,10 @@ addColumn("ALTER TABLE users ADD COLUMN notify_license_expiry INTEGER NOT NULL D
 addColumn("ALTER TABLE users ADD COLUMN notify_warranty_expiry INTEGER NOT NULL DEFAULT 1");
 addColumn("ALTER TABLE users ADD COLUMN notify_digest INTEGER NOT NULL DEFAULT 0");
 addColumn("ALTER TABLE users ADD COLUMN custom_role_id INTEGER REFERENCES roles(id) ON DELETE SET NULL");
+addColumn("ALTER TABLE roles ADD COLUMN role_key TEXT");
+addColumn("ALTER TABLE roles ADD COLUMN system INTEGER NOT NULL DEFAULT 0");
+
+db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_roles_role_key ON roles(role_key) WHERE role_key IS NOT NULL");
 
 db.run("INSERT OR IGNORE INTO status_labels(name,type,color) VALUES('Ready to Deploy','deployable','#198754')");
 db.run("INSERT OR IGNORE INTO status_labels(name,type,color) VALUES('Broken / Undeployable','undeployable','#dc3545')");

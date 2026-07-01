@@ -187,6 +187,7 @@ const NAV_SECTIONS: Array<{ section: string; items: NavItem[] }> = [
     ["/settings",      "Settings",      "admin",  "settings"],
     ["/admin/email",   "Email",         "admin",  "email"],
     ["/admin/acknowledgements", "Acknowledgements", "admin", "acknowledgements"],
+    ["/admin/backup",  "Backup",        "admin",  "backup"],
     ["/profile",       "Profile",       "viewer", "profile"],
   ]},
 ];

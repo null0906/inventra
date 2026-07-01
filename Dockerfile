@@ -17,7 +17,6 @@ COPY --from=builder /app/dist/inventra ./inventra
 RUN chown inventra /app && chmod 750 inventra
 USER inventra
 ENV DATA_DIR=/data PORT=9000 HOST=0.0.0.0
-VOLUME ["/data"]
 EXPOSE 9000
 HEALTHCHECK --interval=30s --timeout=5s CMD curl -f http://localhost:9000/healthz || exit 1
 ENTRYPOINT ["./inventra"]

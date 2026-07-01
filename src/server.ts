@@ -22,6 +22,7 @@ import { db } from "./db";
 import * as ACK from "./ack";
 import * as SL from "./status_labels";
 import * as RL from "./roles";
+import * as BK from "./backup";
 
 type Ctx = { req: Request; url: URL; params: Record<string, string>; user: User };
 type Handler = (c: Ctx) => Response | Promise<Response>;
@@ -81,6 +82,13 @@ add("POST", "/notifications/digest", (c) => E.digestSend(c.user, c.url), "admin"
 add("GET", "/admin/acknowledgements", (c) => ACK.acksAdminPage(c.user, c.url), "admin");
 add("GET", "/admin/acknowledgements/new", (c) => ACK.ackNewPage(c.user), "admin");
 add("POST", "/admin/acknowledgements", (c) => ACK.ackCreate(c.user, c.req), "admin");
+add("GET", "/admin/backup", (c) => BK.backupPage(c.user, c.url), "admin");
+add("POST", "/admin/backup/settings", (c) => BK.saveSettings(c.user, c.req), "admin");
+add("POST", "/admin/backup/create", (c) => BK.createNow(c.user), "admin");
+add("GET", "/admin/backup/download", (c) => BK.downloadLatest(c.user), "admin");
+add("GET", "/admin/backup/file/:name", (c) => BK.downloadFile(c.user, c.params.name), "admin");
+add("POST", "/admin/backup/file/:name/delete", (c) => BK.deleteFile(c.user, c.params.name), "admin");
+add("POST", "/admin/backup/restore", (c) => BK.restore(c.user, c.req), "admin");
 add("GET", "/admin/roles", (c) => RL.roleList(c.user, c.url), "admin");
 add("GET", "/admin/roles/new", (c) => RL.roleNewPage(c.user), "admin");
 add("POST", "/admin/roles", (c) => RL.roleCreate(c.user, c.req), "admin");
@@ -285,6 +293,11 @@ function canAccess(user: User, minRole: string): boolean {
 const CHECK_INTERVAL_HOURS = Math.max(1, Math.min(168, Number(process.env.NOTIFY_CHECK_HOURS) || Number(S.getSetting("notify_check_hours", "24")) || 24));
 setInterval(() => { E.notificationCheck(null); }, CHECK_INTERVAL_HOURS * 3_600_000);
 setTimeout(() => { E.notificationCheck(null); }, 60_000);
+const BACKUP_INTERVAL_HOURS = Number(S.getSetting("backup_interval_hours", "0")) || 0;
+if (BACKUP_INTERVAL_HOURS > 0) {
+  setInterval(() => { void BK.runScheduledBackup(); }, BACKUP_INTERVAL_HOURS * 3_600_000);
+  setTimeout(() => { void BK.runScheduledBackup(); }, 120_000);
+}
 
 const server = Bun.serve({
   port: Number(process.env.PORT || 9000),

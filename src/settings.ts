@@ -7,6 +7,10 @@ export function getSetting(key: string, fallback = ""): string {
   return row?.value ?? fallback;
 }
 
+export function upsertSetting(key: string, value: string): void {
+  db.run("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", [key, value]);
+}
+
 export function appName(): string {
   return getSetting("app_name", process.env.APP_NAME || "Inventra");
 }
