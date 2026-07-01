@@ -69,6 +69,11 @@ function* walkDir(dir: string): Generator<string> {
 }
 function localDir(): string { return getSetting("backup_local_dir", `${process.env.DATA_DIR || "./data"}/backups`); }
 function validBackupName(name: string): boolean { return /^inventra-backup-[\w\-]+\.zip$/.test(name); }
+function latestLocalBackup(): string {
+  const dir = localDir();
+  if (!existsSync(dir)) return "";
+  return readdirSync(dir).filter(validBackupName).map(f => ({ f, t: statSync(`${dir}/${f}`).mtimeMs })).sort((a,b) => b.t - a.t)[0]?.f || "";
+}
 function cleanRel(name: string): boolean { return !!name && !name.startsWith("/") && !name.includes("..") && !name.includes("\\"); }
 function size(n: number): string { return n > 1048576 ? `${(n/1048576).toFixed(1)} MB` : `${Math.ceil(n/1024)} KB`; }
 
@@ -257,8 +262,10 @@ function zipResponse(name: string, data: Uint8Array): Response {
   return new Response(data, { headers:{ "Content-Type":"application/zip", "Content-Disposition":`attachment; filename="${name}"` } });
 }
 export function downloadLatest(): Response {
-  const name = getSetting("last_backup_file", "");
+  const saved = getSetting("last_backup_file", "");
+  const name = saved && validBackupName(saved) && existsSync(`${localDir()}/${saved}`) ? saved : latestLocalBackup();
   if (!name) return redirect("/admin/backup?m=No backup available");
+  if (name !== saved) upsertSetting("last_backup_file", name);
   return downloadFile(null as any, name);
 }
 export function downloadFile(_user: User, name: string): Response {

@@ -143,6 +143,7 @@ const ICONS: Record<string, string> = {
   settings:     ic(`<circle cx="10" cy="10" r="2.5"/><path d="M10 2.5v1.5M10 16v1.5M2.5 10H4M16 10h1.5M4.55 4.55l1.06 1.06M14.39 14.39l1.06 1.06M4.55 15.45l1.06-1.06M14.39 5.61l1.06-1.06"/>`),
   email:        ic(`<rect x="2" y="4" width="16" height="13" rx="2"/><path d="M2 7l8 5 8-5"/>`),
   acknowledgements: ic(`<path d="M4 3h12v14H4zM7 8h6M7 12h3"/><path d="M12 15l2 2 4-5"/>`),
+  backup:       ic(`<path d="M4 4h12v12H4z"/><path d="M7 4v5h6V4M7 16v-4h6v4"/>`),
   profile:      ic(`<circle cx="10" cy="7" r="3.5"/><path d="M3 18c0-3.31 3.13-5.5 7-5.5s7 2.19 7 5.5"/>`),
 };
 

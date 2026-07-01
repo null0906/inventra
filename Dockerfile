@@ -7,16 +7,19 @@ RUN bun build src/server.ts --compile --minify --bytecode --outfile dist/inventr
 
 FROM debian:bookworm-slim
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends curl ca-certificates \
+  && apt-get install -y --no-install-recommends curl ca-certificates gosu \
   && rm -rf /var/lib/apt/lists/* \
   && useradd -r -u 1001 -g root inventra \
   && mkdir -p /data \
   && chown inventra:root /data
 WORKDIR /app
 COPY --from=builder /app/dist/inventra ./inventra
-RUN chown inventra /app && chmod 750 inventra
-USER inventra
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chown inventra /app \
+  && chmod 750 inventra \
+  && chmod 755 /usr/local/bin/docker-entrypoint.sh
 ENV DATA_DIR=/data PORT=9000 HOST=0.0.0.0
 EXPOSE 9000
 HEALTHCHECK --interval=30s --timeout=5s CMD curl -f http://localhost:9000/healthz || exit 1
-ENTRYPOINT ["./inventra"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+CMD ["./inventra"]
