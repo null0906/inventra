@@ -26,9 +26,16 @@ cookies.txt
 *.tmp
 tmp/
 temp/
+stage*_smoke.sh
+audit/
+
+# Local prompt/audit working notes
+HANDOFF_CLAUDE_CHAT.md
+PROMPT_CLAUDE_AUDITOR.md
+PROMPT_CODEX_CODER.md
+STAGE_*.md
 
 # OS/editor noise
 .DS_Store
 .idea/
 .vscode/
-
