@@ -1,0 +1,14 @@
+services:
+  inventra:
+    build: .
+    ports:
+      - "9000:9000"
+    volumes:
+      - inventra_data:/data
+    environment:
+      - DATA_DIR=/data
+      - PORT=9000
+    restart: unless-stopped
+
+volumes:
+  inventra_data:

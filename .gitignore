@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+*.bun-build
+*.bun-build.*
+.*.bun-build
+.*.bun-build.*
+
+# Local app data
+data/
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Local test/session artifacts
+cookies.txt
+*.log
+*.tmp
+tmp/
+temp/
+
+# OS/editor noise
+.DS_Store
+.idea/
+.vscode/
+
